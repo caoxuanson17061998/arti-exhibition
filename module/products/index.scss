@@ -1,0 +1,18 @@
+.product-detail-tabs .ant-tabs-tab {
+  font-weight: 600;
+  font-size: 14px;
+  color: #637381;
+  transition: color 0.3s ease;
+}
+
+.product-detail-tabs .ant-tabs-tab:hover .ant-tabs-tab-btn {
+  color: #454f5b;
+}
+
+.product-detail-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #212b36;
+}
+
+.product-detail-tabs .ant-tabs-ink-bar {
+  background: #212b36;
+}

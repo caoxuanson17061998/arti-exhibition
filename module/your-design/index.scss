@@ -1,0 +1,20 @@
+.ant-radio-button-wrapper::before {
+  display: none !important;
+  content: none !important;
+}
+
+.ant-radio-button-wrapper,
+.ant-radio-button-wrapper:hover,
+.ant-radio-button-wrapper:focus,
+.ant-radio-button-wrapper:active,
+.ant-radio-button-wrapper.ant-radio-button-wrapper-checked {
+  box-shadow: none !important;
+  border-color: transparent !important;
+  background: transparent !important;
+}
+
+.ant-radio-button-wrapper-checked {
+  box-shadow: none !important;
+  border: none !important;
+  background-color: transparent !important;
+}
