@@ -1,9 +1,9 @@
 import {
   seedAll,
-  seedColorsAndSizes,
+  seedColorsAndCategories,
   seedPosts,
   seedProducts,
-} from "@utils/actions/seed-data";
+} from "../../utils/actions/seed-data-new";
 import type {NextApiRequest, NextApiResponse} from "next";
 
 export default async function handler(
@@ -23,7 +23,7 @@ export default async function handler(
 
     switch (type) {
       case "colors-sizes":
-        result = await seedColorsAndSizes();
+        result = await seedColorsAndCategories();
         break;
       case "products":
         result = await seedProducts();

@@ -1,57 +1,29 @@
 /* eslint-disable no-await-in-loop */
 import prisma from "../db";
 
-// Seed colors and scents first
-export async function seedColorsAndScents() {
+// Seed colors, categories and sizes first
+export async function seedColorsAndCategories() {
   try {
     // Seed colors
     const existingColors = await prisma.color.findMany();
     if (existingColors.length === 0) {
       const colors = [
-        {name: "Trắng", hex: "#FFFFFF"},
-        {name: "Đen", hex: "#000000"},
-        {name: "Hồng", hex: "#FFB6C1"},
-        {name: "Tím", hex: "#DDA0DD"},
-        {name: "Xanh dương", hex: "#87CEEB"},
-        {name: "Xanh lá", hex: "#90EE90"},
-        {name: "Vàng", hex: "#FFFF99"},
-        {name: "Cam", hex: "#FFA07A"},
-        {name: "Đỏ", hex: "#FA8072"},
-        {name: "Nâu", hex: "#D2B48C"},
+        {name: "Trắng", hexCode: "#FFFFFF"},
+        {name: "Đen", hexCode: "#000000"},
+        {name: "Hồng", hexCode: "#FFB6C1"},
+        {name: "Tím", hexCode: "#DDA0DD"},
+        {name: "Xanh dương", hexCode: "#87CEEB"},
+        {name: "Xanh lá", hexCode: "#90EE90"},
+        {name: "Vàng", hexCode: "#FFFF99"},
+        {name: "Cam", hexCode: "#FFA07A"},
+        {name: "Đỏ", hexCode: "#FA8072"},
+        {name: "Nâu", hexCode: "#D2B48C"},
       ];
 
       for (const color of colors) {
         await prisma.color.create({data: color});
       }
       console.log("✅ Successfully seeded colors");
-    }
-
-    // Seed scents
-    const existingScents = await prisma.scent.findMany();
-    if (existingScents.length === 0) {
-      const scents = [
-        {
-          name: "Oải hương",
-          description: "Hương thơm thư giãn, giúp giảm căng thẳng",
-        },
-        {name: "Vanilla", description: "Hương ngọt ngào, ấm áp và quyến rũ"},
-        {name: "Hoa hồng", description: "Hương hoa tươi mát, lãng mạn"},
-        {name: "Trà xanh", description: "Hương tươi mát, thanh khiết"},
-        {name: "Sandalwood", description: "Hương gỗ sang trọng, tinh tế"},
-        {name: "Bạc hà", description: "Hương mát lạnh, làm tỉnh táo"},
-        {name: "Cam quýt", description: "Hương tươi mới, năng động"},
-        {
-          name: "Eucalyptus",
-          description: "Hương thảo dược, thanh lọc không khí",
-        },
-        {name: "Lemongrass", description: "Hương cỏ chanh tươi mát"},
-        {name: "Ylang Ylang", description: "Hương hoa nhiệt đới quyến rũ"},
-      ];
-
-      for (const scent of scents) {
-        await prisma.scent.create({data: scent});
-      }
-      console.log("✅ Successfully seeded scents");
     }
 
     // Seed categories
@@ -80,15 +52,39 @@ export async function seedColorsAndScents() {
       console.log("✅ Successfully seeded categories");
     }
 
+    // Seed sizes
+    const existingSizes = await prisma.size.findMany();
+    if (existingSizes.length === 0) {
+      const sizes = [
+        {
+          name: "SMALL",
+          description: "Kích thước nhỏ (8cm x 10cm)",
+        },
+        {
+          name: "MEDIUM",
+          description: "Kích thước trung bình (12cm x 15cm)",
+        },
+        {
+          name: "LARGE",
+          description: "Kích thước lớn (18cm x 20cm)",
+        },
+      ];
+
+      for (const size of sizes) {
+        await prisma.size.create({data: size});
+      }
+      console.log("✅ Successfully seeded sizes");
+    }
+
     return {success: true};
   } catch (error) {
-    console.error("❌ Error seeding colors and scents:", error);
+    console.error("❌ Error seeding colors, categories and sizes:", error);
     return {
       success: false,
       error:
         error instanceof Error
           ? error.message
-          : "Failed to seed colors and scents",
+          : "Failed to seed colors, categories and sizes",
     };
   }
 }
@@ -99,11 +95,11 @@ export async function seedProducts() {
     const existingProducts = await prisma.product.findMany();
 
     if (existingProducts.length === 0) {
-      // Get colors, scents, and categories for relations
-      const [colors, scents, categories] = await Promise.all([
+      // Get colors, categories and sizes for relations
+      const [colors, categories, sizes] = await Promise.all([
         prisma.color.findMany(),
-        prisma.scent.findMany(),
         prisma.category.findMany(),
+        prisma.size.findMany(),
       ]);
 
       const productNames = [
@@ -240,24 +236,20 @@ export async function seedProducts() {
             Math.floor(Math.random() * 20) + 30
           } năm`,
           suitableFor: suitableForOptions[i % suitableForOptions.length],
-          detailedScent: `Phong cách ${
+          detailedSize: `${
+            [
+              "8cm x 10cm",
+              "10cm x 12cm",
+              "12cm x 15cm",
+              "15cm x 18cm",
+              "18cm x 20cm",
+            ][i % 5]
+          } - Phong cách ${
             ["hiện đại", "cổ điển", "tối giản", "nghệ thuật", "trừu tượng"][
               i % 5
             ]
-          }, thể hiện ${
-            [
-              "sự tinh tế",
-              "vẻ đẹp tự nhiên",
-              "năng lượng tích cực",
-              "sự bình yên",
-              "tính sáng tạo",
-            ][i % 5]
           }`,
           isCustomizable: Math.random() > 0.6, // 40% customizable
-          size: ["SMALL", "MEDIUM", "LARGE"][i % 3] as
-            | "SMALL"
-            | "MEDIUM"
-            | "LARGE",
           thumbnailUrl: imageUrls[imageIndex],
           imageUrls: [
             imageUrls[imageIndex],
@@ -283,13 +275,13 @@ export async function seedProducts() {
           });
         }
 
-        // Add scent relations (random scents for each product)
-        const randomScents = scents.slice(0, Math.floor(Math.random() * 2) + 1);
-        for (const scent of randomScents) {
-          await prisma.productScent.create({
+        // Add size relation (random size)
+        if (sizes.length > 0) {
+          const randomSize = sizes[Math.floor(Math.random() * sizes.length)];
+          await prisma.productSize.create({
             data: {
               productId: product.id,
-              scentId: scent.id,
+              sizeId: randomSize.id,
             },
           });
         }
@@ -486,6 +478,65 @@ export async function seedPosts() {
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to seed posts",
+    };
+  }
+}
+
+// Ensure custom product data is available (stub function)
+export async function ensureCustomProductData() {
+  try {
+    // This function ensures basic data needed for custom products
+    // For now, we'll just call the main seed functions if needed
+    const [colors, categories, sizes] = await Promise.all([
+      prisma.color.findMany(),
+      prisma.category.findMany(),
+      prisma.size.findMany(),
+    ]);
+
+    if (colors.length === 0 || categories.length === 0 || sizes.length === 0) {
+      await seedColorsAndCategories();
+    }
+
+    return {success: true};
+  } catch (error) {
+    console.error("❌ Error ensuring custom product data:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to ensure custom product data",
+    };
+  }
+}
+
+// Seed all data in correct order
+export async function seedAll() {
+  try {
+    console.log("🎨 Seeding colors, categories and sizes...");
+    const colorsResult = await seedColorsAndCategories();
+    if (!colorsResult.success) {
+      return colorsResult;
+    }
+
+    console.log("🕯️ Seeding products...");
+    const productsResult = await seedProducts();
+    if (!productsResult.success) {
+      return productsResult;
+    }
+
+    console.log("📝 Seeding posts...");
+    const postsResult = await seedPosts();
+    if (!postsResult.success) {
+      return postsResult;
+    }
+
+    return {success: true};
+  } catch (error) {
+    console.error("❌ Error seeding all data:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to seed all data",
     };
   }
 }

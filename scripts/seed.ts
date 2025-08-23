@@ -1,9 +1,9 @@
 import {
   seedAll,
-  seedColorsAndSizes,
+  seedColorsAndCategories,
   seedPosts,
   seedProducts,
-} from "../utils/actions/seed-data";
+} from "../utils/actions/seed-data-new";
 
 async function main() {
   console.log("🌱 Bắt đầu seed database...");
@@ -17,7 +17,7 @@ async function main() {
     switch (seedType) {
       case "colors":
         console.log("🎨 Seeding colors, sizes, and categories...");
-        result = await seedColorsAndSizes();
+        result = await seedColorsAndCategories();
         break;
       case "products":
         console.log("🕯️ Seeding products...");

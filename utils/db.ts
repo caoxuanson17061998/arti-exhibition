@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Import PrismaClient từ generated client
-import {PrismaClient} from "../generated/prisma";
+import {PrismaClient} from "@prisma/client";
 
 // Khai báo biến global cho PrismaClient để tránh tạo nhiều instance khi develop
 // eslint-disable-next-line no-var

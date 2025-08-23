@@ -4,26 +4,18 @@ async function checkDataCounts() {
   try {
     console.log("📊 Kiểm tra số lượng dữ liệu trong database...\n");
 
-    const [
-      userCount,
-      colorCount,
-      scentCount,
-      categoryCount,
-      productCount,
-      postCount,
-    ] = await Promise.all([
-      prisma.user.count(),
-      prisma.color.count(),
-      prisma.scent.count(),
-      prisma.category.count(),
-      prisma.product.count(),
-      prisma.post.count(),
-    ]);
+    const [userCount, colorCount, categoryCount, productCount, postCount] =
+      await Promise.all([
+        prisma.user.count(),
+        prisma.color.count(),
+        prisma.category.count(),
+        prisma.product.count(),
+        prisma.post.count(),
+      ]);
 
     console.log("🏢 === THỐNG KÊ DATABASE ===");
     console.log(`👥 Users: ${userCount}`);
     console.log(`🎨 Colors: ${colorCount}`);
-    console.log(`🌸 Scents: ${scentCount}`);
     console.log(`📂 Categories: ${categoryCount}`);
     console.log(`🕯️  Products: ${productCount}`);
     console.log(`📝 Posts: ${postCount}`);
@@ -32,11 +24,6 @@ async function checkDataCounts() {
     if (productCount > 0) {
       const products = await prisma.product.findMany({
         include: {
-          scents: {
-            include: {
-              scent: true,
-            },
-          },
           colors: {
             include: {
               color: true,
@@ -63,12 +50,7 @@ async function checkDataCounts() {
             .join(", ")}`,
         );
         console.log(
-          `   🌸 Scents: ${product.scents
-            .map((s: any) => s.scent.name)
-            .join(", ")}`,
-        );
-        console.log(
-          `   🎨 Colors: ${product.colors
+          `    Colors: ${product.colors
             .map((c: any) => c.color.name)
             .join(", ")}`,
         );

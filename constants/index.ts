@@ -13,19 +13,6 @@ export enum Collection {
   Summer = "summer",
 }
 
-export enum Scent {
-  Lavender = "lavender",
-  EucalyptusMint = "eucalyptus-mint",
-  GreenTea = "green-tea",
-  Rose = "rose",
-  Peony = "peony",
-  Jasmine = "jasmine",
-  Sakura = "sakura",
-  Citrus = "citrus",
-  Berry = "berry",
-  PineappleCoconut = "pineapple-coconut",
-}
-
 export enum Color {
   Cyan = "#03A9F4",
   Green = "#4CAF50",
@@ -62,19 +49,6 @@ export const COLLECTION_OPTIONS = [
   {label: "Sắc Hoa Thì Thầm", value: Collection.Flower},
   {label: "Thắp Lên Cảm Xúc", value: Collection.Emotion},
   {label: "Dấu Chân Mùa Hè", value: Collection.Summer},
-];
-
-export const SCENT_OPTIONS = [
-  {label: "Oải hương", value: Scent.Lavender},
-  {label: "Bạch đàn & Bạc hà", value: Scent.EucalyptusMint},
-  {label: "Trà xanh", value: Scent.GreenTea},
-  {label: "Hoa hồng", value: Scent.Rose},
-  {label: "Mẫu đơn", value: Scent.Peony},
-  {label: "Nhài", value: Scent.Jasmine},
-  {label: "Hoa anh đào", value: Scent.Sakura},
-  {label: "Cam, Chanh, Quýt", value: Scent.Citrus},
-  {label: "Dâu rừng", value: Scent.Berry},
-  {label: "Dứa & Dừa", value: Scent.PineappleCoconut},
 ];
 
 export const COLOR_OPTIONS = [
