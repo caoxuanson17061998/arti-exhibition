@@ -27,11 +27,6 @@ function validateAndTransformProductBody(
     "description",
     "originalPrice",
     "salePrice",
-    "ingredients",
-    "usage",
-    "burnTime",
-    "suitableFor",
-    "detailedSize",
     "imageUrls",
     "colorIds",
     "sizeIds",
@@ -42,10 +37,6 @@ function validateAndTransformProductBody(
     if (!(field in b)) {
       return {error: `Missing field: ${field}`};
     }
-  }
-
-  if (typeof b.detailedSize !== "string" || b.detailedSize.length === 0) {
-    return {error: "Invalid or missing detailedSize value"};
   }
 
   if (
@@ -66,12 +57,6 @@ function validateAndTransformProductBody(
     description: String(b.description),
     originalPrice: Number(b.originalPrice),
     salePrice: Number(b.salePrice),
-    ingredients: String(b.ingredients),
-    usage: String(b.usage),
-    burnTime: String(b.burnTime),
-    suitableFor: String(b.suitableFor),
-    detailedSize: String(b.detailedSize),
-    isCustomizable: Boolean(b.isCustomizable),
     thumbnailUrl:
       typeof b.thumbnailUrl === "string" ? b.thumbnailUrl : undefined,
     imageUrls: b.imageUrls,

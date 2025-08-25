@@ -7,12 +7,6 @@ export interface ProductInput {
   description: string;
   originalPrice: number;
   salePrice: number;
-  ingredients: string;
-  usage: string;
-  burnTime: string;
-  suitableFor: string;
-  detailedSize: string;
-  isCustomizable: boolean;
   thumbnailUrl?: string;
   imageUrls: string[];
   colorIds: string[];
@@ -52,12 +46,6 @@ export async function createProduct(data: ProductInput) {
       description: data.description,
       originalPrice: data.originalPrice,
       salePrice: data.salePrice,
-      ingredients: data.ingredients,
-      usage: data.usage,
-      burnTime: data.burnTime,
-      suitableFor: data.suitableFor,
-      detailedSize: data.detailedSize,
-      isCustomizable: data.isCustomizable,
       thumbnailUrl: data.thumbnailUrl,
       imageUrls: data.imageUrls,
     };
@@ -124,12 +112,6 @@ export async function updateProduct(id: string, data: ProductInput) {
         description: data.description,
         originalPrice: data.originalPrice,
         salePrice: data.salePrice,
-        ingredients: data.ingredients,
-        usage: data.usage,
-        burnTime: data.burnTime,
-        suitableFor: data.suitableFor,
-        detailedSize: data.detailedSize,
-        isCustomizable: data.isCustomizable,
         thumbnailUrl: data.thumbnailUrl,
         imageUrls: data.imageUrls,
         colors: {

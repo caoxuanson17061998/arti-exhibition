@@ -287,13 +287,8 @@ export function ProductDetail({id, onBack}: ProductDetailProps): JSX.Element {
       label: "Mô tả sản phẩm",
       children: (
         <DescriptionTab
-          productInfo={[
-            {label: "Thành phần:", value: productData.ingredients || ""},
-            {label: "Công dụng:", value: productData.usage || ""},
-            {label: "Thời gian cháy:", value: productData.burnTime || ""},
-            {label: "Thích hợp cho:", value: productData.suitableFor || ""},
-          ]}
-          description={productData.detailedScent || ""}
+          productInfo={[]}
+          description={productData.description || ""}
         />
       ),
     },

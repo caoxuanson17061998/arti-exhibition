@@ -206,12 +206,6 @@ export interface Product {
   rating: number;
   reviewCount: number;
   isOnSale: boolean;
-  ingredients: string;
-  usage: string;
-  burnTime: string;
-  suitableFor: string;
-  detailedSize: string;
-  isCustomizable: boolean;
   thumbnailUrl?: string;
   imageUrls: string[];
   createdAt: string;

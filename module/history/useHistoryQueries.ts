@@ -155,13 +155,6 @@ export const useHistoryQueries = () => {
           reviewCount: 0,
           isOnSale:
             product.originalPrice > (product.salePrice || item.unitPrice),
-          ingredients: "",
-          usage: "",
-          burnTime: "",
-          suitableFor: "",
-          detailedScent: "",
-          detailedSize: "Medium",
-          isCustomizable: false,
           size: "MEDIUM" as const,
           sizes: [],
           thumbnailUrl: item.productImage || product.thumbnailUrl || "",

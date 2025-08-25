@@ -53,12 +53,6 @@ export default function CreateUpdateProductComponent({
       description: "",
       originalPrice: 0,
       salePrice: 0,
-      ingredients: "",
-      usage: "",
-      burnTime: "",
-      suitableFor: "",
-      detailedSize: "",
-      isCustomizable: false,
       thumbnailUrl: "",
       imageUrls: [],
       colorIds: [],
@@ -141,14 +135,8 @@ export default function CreateUpdateProductComponent({
         name: productDetail.name,
         slug: productDetail.slug,
         description: productDetail.description ?? "",
-        ingredients: productDetail.ingredients ?? "",
         originalPrice: productDetail.originalPrice,
         salePrice: productDetail.salePrice,
-        usage: productDetail.usage || "",
-        burnTime: productDetail.burnTime || "",
-        suitableFor: productDetail.suitableFor || "",
-        detailedSize: productDetail.detailedSize || "",
-        isCustomizable: productDetail.isCustomizable ?? false,
         thumbnailUrl: productDetail.thumbnailUrl || "",
         imageUrls: productDetail.imageUrls || [],
         colorIds: productDetail.colors?.map((c: any) => c.color.id) || [],
@@ -280,64 +268,13 @@ export default function CreateUpdateProductComponent({
         <Accordion defaultExpanded className="mb-4 shadow-sm border">
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography component="div">
-              <div className="font-semibold text-lg">Thông tin chi tiết</div>
-              <div className="text-[#637381] font-light">
-                Thành phần, cách sử dụng, thời gian bảo quản...
-              </div>
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <ControlledTextField
-              name="ingredients"
-              control={control}
-              label="Thành phần"
-              multiline
-              error={errors.ingredients}
-            />
-            <ControlledTextField
-              name="usage"
-              control={control}
-              label="Cách sử dụng"
-              error={errors.usage}
-            />
-            <ControlledTextField
-              name="burnTime"
-              control={control}
-              label="Thời gian bảo quản"
-              error={errors.burnTime}
-            />
-            <ControlledTextField
-              name="suitableFor"
-              control={control}
-              label="Phù hợp cho"
-              error={errors.suitableFor}
-            />
-            <ControlledTextField
-              name="detailedSize"
-              control={control}
-              label="Chi tiết về kích thước"
-              multiline
-              rows={3}
-              error={errors.detailedSize}
-            />
-          </AccordionDetails>
-        </Accordion>
-
-        <Accordion defaultExpanded className="mb-4 shadow-sm border">
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography component="div">
               <div className="font-semibold text-lg">Thuộc tính</div>
               <div className="text-[#637381] font-light">
-                Tùy chỉnh, kích thước, phân loại...
+                Kích thước, phân loại...
               </div>
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <ControlledBooleanSelect
-              name="isCustomizable"
-              control={control}
-              label="Có thể tùy chỉnh"
-            />
             <ControlledMultiSelect
               name="categoryIds"
               control={control}

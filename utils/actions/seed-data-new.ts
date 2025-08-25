@@ -1,5 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import prisma from "../db";
+import bcrypt from "bcryptjs";
 
 // Seed colors, categories and sizes first
 export async function seedColorsAndCategories() {
@@ -31,19 +32,26 @@ export async function seedColorsAndCategories() {
     if (existingCategories.length === 0) {
       const categories = [
         {
-          name: "Nến thơm cao cấp",
-          description: "Dòng nến thơm premium với chất lượng vượt trội",
+          name: "Tranh Phong Cảnh",
         },
         {
-          name: "Nến thơm handmade",
-          description: "Nến thơm thủ công, độc đáo và tinh tế",
+          name: "Tranh Trừu Tượng",
         },
         {
-          name: "Nến thơm trang trí",
-          description: "Nến vừa thơm vừa đẹp, phù hợp trang trí",
+          name: "Tranh Hoa Lá",
         },
-        {name: "Nến massage", description: "Nến có thể tan thành dầu massage"},
-        {name: "Nến thơm mini", description: "Kích thước nhỏ gọn, tiện lợi"},
+        {
+          name: "Tranh Động Vật",
+        },
+        {
+          name: "Tranh Chân Dung",
+        },
+        {
+          name: "Tranh Minimalist",
+        },
+        {
+          name: "Tranh Vintage",
+        },
       ];
 
       for (const category of categories) {
@@ -58,15 +66,19 @@ export async function seedColorsAndCategories() {
       const sizes = [
         {
           name: "SMALL",
-          description: "Kích thước nhỏ (8cm x 10cm)",
+          description: "Kích thước nhỏ (20cm x 30cm)",
         },
         {
           name: "MEDIUM",
-          description: "Kích thước trung bình (12cm x 15cm)",
+          description: "Kích thước trung bình (40cm x 60cm)",
         },
         {
           name: "LARGE",
-          description: "Kích thước lớn (18cm x 20cm)",
+          description: "Kích thước lớn (60cm x 90cm)",
+        },
+        {
+          name: "EXTRA_LARGE",
+          description: "Kích thước siêu lớn (80cm x 120cm)",
         },
       ];
 
@@ -168,17 +180,6 @@ export async function seedProducts() {
         "Sản phẩm handmade tinh xảo, từng chi tiết được chăm chút kỹ lưỡng",
       ];
 
-      const suitableForOptions = [
-        "Phòng khách, phòng ngủ, văn phòng",
-        "Phòng ăn, hành lang, cầu thang",
-        "Spa, salon, phòng thiền",
-        "Khách sạn, resort, nhà hàng",
-        "Studio, gallery, showroom",
-        "Phòng làm việc, thư viện",
-        "Phòng trẻ em, phòng học",
-        "Phòng tắm, ban công, sân vườn",
-      ];
-
       const imageUrls = [
         "/img/products/product-1.png",
         "/img/products/product-2.png",
@@ -230,26 +231,6 @@ export async function seedProducts() {
           rating: parseFloat(rating as string),
           reviewCount,
           isOnSale,
-          ingredients: "Canvas cao cấp, mực in chống UV, khung gỗ tự nhiên",
-          usage: "Treo tường trong nhà, tránh ánh nắng trực tiếp",
-          burnTime: `Bền màu ${Math.floor(Math.random() * 20) + 10}-${
-            Math.floor(Math.random() * 20) + 30
-          } năm`,
-          suitableFor: suitableForOptions[i % suitableForOptions.length],
-          detailedSize: `${
-            [
-              "8cm x 10cm",
-              "10cm x 12cm",
-              "12cm x 15cm",
-              "15cm x 18cm",
-              "18cm x 20cm",
-            ][i % 5]
-          } - Phong cách ${
-            ["hiện đại", "cổ điển", "tối giản", "nghệ thuật", "trừu tượng"][
-              i % 5
-            ]
-          }`,
-          isCustomizable: Math.random() > 0.6, // 40% customizable
           thumbnailUrl: imageUrls[imageIndex],
           imageUrls: [
             imageUrls[imageIndex],
@@ -324,117 +305,120 @@ export async function seedPosts() {
       });
 
       if (!adminUser) {
+        // Hash the password before saving
+        const hashedPassword = await bcrypt.hash("Admin@123", 10);
+
         adminUser = await prisma.user.create({
           data: {
             email: "admin@gmail.com",
             name: "Admin",
-            password: "Admin@123", // password: "password"
+            password: hashedPassword,
             role: "admin",
           },
         });
       }
 
       const postTitles = [
-        "Lợi ích của nến thơm đối với sức khỏe tinh thần",
-        "Cách chọn nến thơm phù hợp cho từng không gian",
-        "Hướng dẫn bảo quản nến thơm đúng cách",
-        "Top 10 hương thơm được yêu thích nhất năm 2024",
-        "Nghệ thuật trang trí với nến thơm trong nhà",
-        "Nến thơm và phong thủy: Tạo năng lượng tích cực",
-        "DIY: Làm nến thơm tại nhà đơn giản",
-        "Lịch sử và văn hóa nến thơm qua các thời đại",
-        "Aromatherapy: Liệu pháp hương thơm hiện đại",
-        "Nến thơm cho spa tại nhà: Bí quyết thư giãn",
-        "Tác động của màu sắc nến lên tâm trạng",
-        "Cách phối hợp hương thơm cho từng mùa",
-        "Nến thơm organic: Xu hướng xanh cho gia đình",
-        "Bí mật của việc pha chế hương thơm độc đáo",
-        "Nến thơm trong các dịp lễ và sự kiện đặc biệt",
-        "Yoga và thiền với nến thơm: Hành trình tĩnh lặng",
-        "Cách tạo không gian lãng mạn với nến thơm",
-        "Nến thơm và giấc ngủ: Chìa khóa của đêm yên bình",
-        "Khoa học đằng sau tác dụng của hương thơm",
-        "Nến thơm handmade vs công nghiệp: Ưu nhược điểm",
-        "Cách đọc nhãn nến thơm để chọn sản phẩm tốt",
-        "Nến thơm trong văn hóa Việt Nam",
-        "Trang trí bàn ăn với nến thơm cho bữa tiệc",
-        "Nến thơm và tâm lý học màu sắc",
-        "Hướng dẫn thắp nến an toàn tại nhà",
-        "Nến thơm cho trẻ em: Lưu ý và khuyến nghị",
-        "Tác động của hương thơm lên trí nhớ",
-        "Nến thơm trong thiết kế nội thất hiện đại",
-        "Cách kết hợp nến thơm với âm nhạc thư giãn",
-        "Nến thơm mùa đông: Ấm áp cho ngôi nhà",
-        "Nến thơm mùa xuân: Tươi mới và sống động",
-        "Nến thơm mùa hè: Mát mẻ và tươi sáng",
-        "Nến thơm mùa thu: Ấm cúng và lãng mạn",
-        "Phong cách Scandinavian với nến thơm tối giản",
-        "Nến thơm trong phong cách Bohemian",
-        "Cách chăm sóc da bằng nến massage thơm",
-        "Nến thơm và meditation: Kết nối tâm linh",
-        "Tác dụng của nến thơm lên hormone hạnh phúc",
-        "Nến thơm trong cafe và nhà hàng",
-        "Cách tái chế nến thơm đã cháy hết",
-        "Nến thơm luxury: Đẳng cấp trong từng chi tiết",
-        "Hương thơm thiên nhiên vs tổng hợp",
-        "Nến thơm cho người có làn da nhạy cảm",
-        "Cách tạo signature scent cho gia đình",
-        "Nến thơm trong trị liệu căng thẳng",
-        "Phong thủy và vị trí đặt nến trong nhà",
-        "Nến thơm cho workout tại nhà",
-        "Cách chọn nến thơm cho phòng tắm",
-        "Nến thơm và tác động lên giấc mơ",
-        "Xu hướng nến thơm năm 2024",
+        "Cách chọn tranh trang trí phù hợp với không gian nhà",
+        "Nghệ thuật treo tranh: Bí quyết tạo điểm nhấn cho tường",
+        "Phong thủy và tranh trang trí: Tạo năng lượng tích cực",
+        "Top 10 xu hướng tranh nghệ thuật được ưa chuộng 2024",
+        "Cách bảo quản tranh canvas để giữ màu sắc bền đẹp",
+        "Tranh trừu tượng: Hiểu và cảm nhận nghệ thuật hiện đại",
+        "Tranh phong cảnh: Mang thiên nhiên vào không gian sống",
+        "Cách phối màu tranh với nội thất để tạo hài hòa",
+        "Tranh đen trắng: Sự tối giản đầy cuốn hút",
+        "Nghệ thuật sắp xếp tranh theo từng phòng",
+        "Tranh hoa lá: Tạo không gian tươi mới và sinh động",
+        "Cách làm sạch và bảo dưỡng tranh canvas",
+        "Tranh vintage: Nét cổ điển trong thiết kế hiện đại",
+        "Tâm lý màu sắc trong tranh trang trí",
+        "Cách chọn khung tranh phù hợp với từng tác phẩm",
+        "Tranh động vật: Mang sự sống động vào ngôi nhà",
+        "Gallery wall: Nghệ thuật trưng bày nhiều tranh",
+        "Tranh cho phòng ngủ: Tạo không gian thư giãn",
+        "Tranh minimalist: Vẻ đẹp của sự đơn giản",
+        "Cách tạo điểm nhấn với tranh nghệ thuật lớn",
+        "Tranh cho phòng khách: Thể hiện phong cách gia chủ",
+        "Nghệ thuật kết hợp ánh sáng và tranh trang trí",
+        "Tranh chân dung: Tôn vinh vẻ đẹp con người",
+        "Cách chọn tranh phù hợp với màu tường",
+        "Tranh 3D: Công nghệ mới trong nghệ thuật trang trí",
+        "Tranh cho văn phòng: Tạo môi trường làm việc tích cực",
+        "Lịch sử nghệ thuật hội họa qua các thời kỳ",
+        "Tranh canvas vs tranh giấy: Ưu nhược điểm của từng loại",
+        "Cách tạo bộ sưu tập tranh cá nhân",
+        "Tranh theo phong cách Scandinavia",
+        "Nghệ thuật mix & match tranh với đồ nội thất",
+        "Tranh cho phòng ăn: Tạo không gian ấm cúng",
+        "Cách đầu tư tranh nghệ thuật thông minh",
+        "Tranh digital art: Xu hướng nghệ thuật số",
+        "Tranh mandala: Nghệ thuật thiền và tĩnh lặng",
+        "Cách trang trí cầu thang bằng tranh",
+        "Tranh cho phòng tắm: Lưu ý đặc biệt về độ ẩm",
+        "Nghệ thuật layering trong trang trí tranh",
+        "Tranh theo mùa: Thay đổi không gian theo thời gian",
+        "Cách chụp ảnh tranh để bán online hiệu quả",
+        "Tranh handmade vs tranh in: Sự khác biệt chất lượng",
+        "Tranh cho phòng trẻ em: An toàn và giáo dục",
+        "Nghệ thuật storytelling qua tranh trang trí",
+        "Tranh theo phong cách Bohemian",
+        "Cách tự làm tranh DIY tại nhà",
+        "Tranh theo phong cách Industrial",
+        "Nghệ thuật cân bằng thị giác trong treo tranh",
+        "Tranh panorama: Tạo cảm giác rộng mở",
+        "Cách bảo vệ tranh khỏi ánh nắng mặt trời",
+        "Xu hướng tranh nghệ thuật tương lai",
       ];
 
       const descriptions = [
-        "Khám phá những tác động tích cực của nến thơm lên tâm trạng và sức khỏe tinh thần",
-        "Hướng dẫn chi tiết cách lựa chọn nến thơm phù hợp với từng không gian sống",
-        "Những bí quyết để nến thơm của bạn luôn giữ được chất lượng tốt nhất",
-        "Cập nhật những xu hướng hương thơm hot nhất được ưa chuộng hiện nay",
-        "Biến ngôi nhà thành gallery nghệ thuật với nến thơm sang trọng",
-        "Ứng dụng nguyên lý phong thủy để tạo không gian sống hài hòa",
-        "Hướng dẫn từng bước tạo ra nến thơm độc đáo tại nhà",
-        "Hành trình khám phá di sản văn hóa nến thơm qua nhiều thế kỷ",
-        "Tìm hiểu về liệu pháp hương thơm và ứng dụng trong cuộc sống",
-        "Tạo không gian thư giãn như spa ngay tại nhà với nến thơm",
+        "Khám phá những nguyên tắc cơ bản để chọn tranh phù hợp với phong cách và không gian nhà bạn",
+        "Hướng dẫn chi tiết về nghệ thuật treo tranh để tạo ra những điểm nhấn ấn tượng",
+        "Những bí quyết để tranh của bạn luôn giữ được màu sắc tươi sáng qua thời gian",
+        "Cập nhật những xu hướng tranh nghệ thuật hot nhất được ưa chuộng hiện nay",
+        "Biến ngôi nhà thành gallery nghệ thuật với cách bố trí tranh khoa học",
+        "Ứng dụng nguyên lý phong thủy để chọn và đặt tranh tạo năng lượng tích cực",
+        "Hướng dẫn từng bước tạo ra những tác phẩm tranh độc đáo tại nhà",
+        "Hành trình khám phá lịch sử nghệ thuật hội họa qua nhiều thế kỷ",
+        "Tìm hiểu về tâm lý học màu sắc và ứng dụng trong trang trí nội thất",
+        "Tạo không gian sống nghệ thuật và đẳng cấp với tranh trang trí",
       ];
 
       const blogImages = [
-        "/img/blog/candle-wellness.jpg",
-        "/img/blog/home-decoration.jpg",
-        "/img/blog/aromatherapy.jpg",
-        "/img/blog/spa-relaxation.jpg",
-        "/img/blog/meditation.jpg",
-        "/img/blog/romantic-dinner.jpg",
-        "/img/blog/modern-interior.jpg",
-        "/img/blog/seasonal-decor.jpg",
+        "/img/blog/art-gallery.jpg",
+        "/img/blog/home-decoration-art.jpg",
+        "/img/blog/abstract-painting.jpg",
+        "/img/blog/landscape-art.jpg",
+        "/img/blog/modern-interior-art.jpg",
+        "/img/blog/vintage-painting.jpg",
+        "/img/blog/minimalist-art.jpg",
+        "/img/blog/colorful-artwork.jpg",
         "/img/products/product-1.png",
         "/img/products/product-2.png",
         "/img/products/product-3.png",
-        "/img/home/candles/candle-1.svg",
-        "/img/home/candles/candle-2.svg",
-        "/img/home/candles/candle-3.svg",
+        "/img/products/product-4.png",
+        "/img/products/product-5.png",
+        "/img/products/product-6.png",
       ];
 
       const contentTemplates = [
-        `<h2>Khám phá thế giới nến thơm</h2>
-         <p>Nến thơm không chỉ đơn thuần là vật dụng trang trí mà còn mang trong mình những giá trị sâu sắc về mặt tinh thần và sức khỏe.</p>
-         <h3>Tác động tích cực</h3>
-         <p>Những nghiên cứu khoa học đã chứng minh rằng hương thơm có thể ảnh hưởng trực tiếp đến tâm trạng và cảm xúc của con người.</p>
-         <p>Việc sử dụng nến thơm đúng cách sẽ mang lại những lợi ích tuyệt vời cho cuộc sống hàng ngày của bạn.</p>`,
+        `<h2>Nghệ thuật trang trí nội thất với tranh</h2>
+         <p>Tranh không chỉ đơn thuần là vật dụng trang trí mà còn thể hiện phong cách và cá tính của gia chủ.</p>
+         <h3>Tạo điểm nhấn cho không gian</h3>
+         <p>Một bức tranh được lựa chọn và bố trí phù hợp có thể biến đổi hoàn toàn không gian sống của bạn.</p>
+         <p>Việc hiểu rõ nguyên tắc phối màu và cân bằng thị giác sẽ giúp bạn tạo ra những góc nhà đẹp mắt.</p>`,
 
-        `<h2>Bí quyết chọn lựa hoàn hảo</h2>
-         <p>Để có được trải nghiệm tốt nhất với nến thơm, việc lựa chọn đúng sản phẩm phù hợp với nhu cầu là vô cùng quan trọng.</p>
+        `<h2>Bí quyết chọn tranh hoàn hảo</h2>
+         <p>Để có được bức tranh phù hợp nhất với ngôi nhà, việc cân nhắc kỹ lưỡng về nhiều yếu tố là rất quan trọng.</p>
          <h3>Những yếu tố cần xem xét</h3>
-         <p>Từ chất liệu sáp, loại bấc đến hương thơm, mỗi chi tiết đều góp phần tạo nên chất lượng của sản phẩm.</p>
-         <p>Hãy cùng tìm hiểu những tiêu chí quan trọng để có sự lựa chọn thông minh nhất.</p>`,
+         <p>Từ kích thước, màu sắc, chủ đề đến vị trí treo, mỗi chi tiết đều ảnh hưởng đến tổng thể không gian.</p>
+         <p>Hãy cùng tìm hiểu những tiêu chí quan trọng để có sự lựa chọn thông minh và phù hợp nhất.</p>`,
 
-        `<h2>Nghệ thuật sống với hương thơm</h2>
-         <p>Hương thơm có sức mạnh kỳ diệu trong việc tạo ra những khoảnh khắc đáng nhớ và cảm xúc sâu lắng.</p>
-         <h3>Tạo không gian sống ý nghĩa</h3>
-         <p>Mỗi hương thơm đều mang trong mình một câu chuyện riêng, một cảm xúc đặc biệt mà chỉ bạn mới có thể cảm nhận.</p>
-         <p>Khám phá cách kết hợp hương thơm với không gian sống để tạo ra môi trường lý tưởng cho bản thân.</p>`,
+        `<h2>Nghệ thuật sống cùng tranh trang trí</h2>
+         <p>Tranh có sức mạnh kỳ diệu trong việc tạo ra cảm xúc và không khí đặc biệt cho ngôi nhà.</p>
+         <h3>Tạo không gian sống có tâm hồn</h3>
+         <p>Mỗi bức tranh đều kể một câu chuyện riêng, truyền tải một thông điệp đặc biệt đến người xem.</p>
+         <p>Khám phá cách kết hợp tranh với ánh sáng và nội thất để tạo ra môi trường sống lý tưởng.</p>`,
       ];
 
       const posts = [];
@@ -519,7 +503,7 @@ export async function seedAll() {
       return colorsResult;
     }
 
-    console.log("🕯️ Seeding products...");
+    console.log("�️ Seeding art products...");
     const productsResult = await seedProducts();
     if (!productsResult.success) {
       return productsResult;

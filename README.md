@@ -6,13 +6,13 @@ HANOSCENT là một ứng dụng thương mại điện tử chuyên bán nến 
 
 ### 🛒 **E-commerce Core**
 
-- **Catalog sản phẩm**: Duyệt và tìm kiếm nến thơm theo danh mục, màu sắc, mùi hương
-- **Chi tiết sản phẩm**: Thông tin đầy đủ về nguyên liệu, cách sử dụng, thời gian cháy
+- **Catalog sản phẩm**: Duyệt và tìm kiếm tranh nghệ thuật theo danh mục, màu sắc, phong cách
+- **Chi tiết sản phẩm**: Thông tin đầy đủ về chất liệu, kích thước, cách bảo quản
 - **Giỏ hàng thông minh**: Quản lý sản phẩm, tính toán tự động
 - **Thanh toán đa kênh**: COD, chuyển khoản online, VietQR
 - **Quản lý đơn hàng**: Theo dõi trạng thái từ đặt hàng đến giao hàng
 
-### 🎨 **Your Design - Thiết kế nến tùy chỉnh**
+### 🎨 **Your Design - Thiết kế tranh tùy chỉnh**
 
 - **Bước 1**: Chọn màu sắc nến từ bảng màu đa dạng
 - **Bước 2**: Tùy chọn mùi hương (có thể chọn nhiều mùi)

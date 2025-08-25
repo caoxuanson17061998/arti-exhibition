@@ -168,25 +168,19 @@ model ProductCategory {
 }
 
 model Product {
-  id             String   @id @default(cuid())
-  name           String
-  slug           String   @unique
-  description    String
-  originalPrice  Int
-  salePrice      Int
-  rating         Float    @default(0)
-  reviewCount    Int      @default(0)
-  isOnSale       Boolean  @default(false)
-  ingredients    String
-  usage          String
-  burnTime       String
-  suitableFor    String
-  detailedSize   String
-  isCustomizable Boolean  @default(false)
-  thumbnailUrl   String?
-  imageUrls      String[]
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String
+  originalPrice Int
+  salePrice     Int
+  rating        Float    @default(0)
+  reviewCount   Int      @default(0)
+  isOnSale      Boolean  @default(false)
+  thumbnailUrl  String?
+  imageUrls     String[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relations
   sizes      ProductSize[]

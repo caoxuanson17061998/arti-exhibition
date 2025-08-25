@@ -17,30 +17,6 @@ export const productSchema = yup.object({
 
   salePrice: yup.number().default(0).min(0, "Giá bán phải lớn hơn hoặc bằng 0"),
 
-  ingredients: yup
-    .string()
-    .max(255, "Thành phần không được vượt quá 255 ký tự")
-    .default(""),
-
-  usage: yup
-    .string()
-    .max(255, "Cách sử dụng không được vượt quá 255 ký tự")
-    .default(""),
-
-  burnTime: yup
-    .string()
-    .max(255, "Thời gian bảo quản không được vượt quá 255 ký tự")
-    .default(""),
-
-  suitableFor: yup
-    .string()
-    .max(255, "Phù hợp với không được vượt quá 255 ký tự")
-    .default(""),
-
-  detailedSize: yup.string().default(""),
-
-  isCustomizable: yup.boolean().default(false),
-
   isCharity: yup.boolean().default(false),
 
   thumbnailUrl: yup
