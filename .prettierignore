@@ -1,7 +1,8 @@
 .next
 next-env.d.ts
 node_modules
-yarn.lock
+# lock files
+package-lock.json
 package-lock.json
 public
 docs

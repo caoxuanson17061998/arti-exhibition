@@ -29,7 +29,7 @@ workflow:
 .node_modules-cache: &node_modules-cache # Cache node_modules
   key:
     files:
-      - yarn.lock
+      - package-lock.json
   paths:
     - node_modules
   policy: pull
@@ -67,7 +67,7 @@ cache-main:
       when: manual
   environment: $GITLAB_ENV
   script:
-    - yarn bootstrap --cache-folder .yarn
+    - npm ci --cache .npm
 
 test-main:
   stage: quality_check
@@ -83,10 +83,10 @@ test-main:
   dependencies:
     - cache-main
   script:
-    - yarn lint
-    - yarn prettier
-    - yarn check-types
-    - yarn test
+    - npm run lint
+    - npm run prettier
+    - npm run check-types
+    - npm test
 
 sonarqube:
   stage: quality_check

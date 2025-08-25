@@ -1,8 +1,8 @@
-# Server Actions với NextJS + Prisma Setup
+# Server Actions với NextJS + Prisma Setup - ART EXHIBITION
 
 ## Tổng quan
 
-Dự án này đã được setup với Server Actions pattern sử dụng NextJS và Prisma để thực hiện các database operations một cách hiệu quả và type-safe.
+Dự án ART EXHIBITION đã được setup với Server Actions pattern sử dụng NextJS và Prisma để thực hiện các database operations một cách hiệu quả và type-safe. Ứng dụng chuyên về e-commerce nghệ thuật với các tính năng quản lý sản phẩm tranh, đơn hàng, và blog nghệ thuật.
 
 ## Cấu trúc thư mục
 
@@ -15,22 +15,30 @@ Dự án này đã được setup với Server Actions pattern sử dụng NextJ
 │   ├── db.ts                 # Database connection utility
 │   └── actions/
 │       ├── user-actions.ts   # User CRUD operations
-│       └── post-actions.ts   # Post CRUD operations
+│       ├── post-actions.ts   # Blog post CRUD operations
+│       ├── product-actions.ts # Art product CRUD operations
+│       └── order-actions.ts   # Order management operations
 ├── pages/
 │   └── api/
-│       ├── users/           # API routes cho users
-│       └── posts/           # API routes cho posts
+│       ├── users/           # API routes cho user management
+│       ├── posts/           # API routes cho blog posts
+│       ├── products/        # API routes cho art products
+│       └── orders/          # API routes cho orders
 ├── components/
-│   └── UserForm.tsx         # Form component cho user operations
-└── pages/demo/
-    └── server-actions.tsx   # Demo page
+│   ├── UserForm.tsx         # Form component cho user operations
+│   ├── ProductForm.tsx      # Form component cho art products
+│   └── OrderForm.tsx        # Form component cho orders
+└── pages/
+    ├── products-admin/      # Admin pages cho product management
+    ├── order-admin/         # Admin pages cho order management
+    └── dashboard/           # Admin dashboard
 ```
 
 ## Setup Database
 
 1. **Cập nhật file `.env`** với database URL của bạn:
 ```env
-DATABASE_URL="postgresql://username:password@localhost:5432/hanoscent_db?schema=public"
+DATABASE_URL="postgresql://username:password@localhost:5432/art_exhibition_db?schema=public"
 ```
 
 2. **Chạy migration để tạo database**:
@@ -62,34 +70,51 @@ Các server actions được định nghĩa trong `utils/actions/`:
 
 #### User Actions:
 - `createUser(formData)` - Tạo user mới
-- `getUsers()` - Lấy danh sách users
+- `getUsers()` - Lấy danh sách users  
 - `getUserById(id)` - Lấy user theo ID
 - `updateUser(id, formData)` - Cập nhật user
 - `deleteUser(id)` - Xóa user
 
-#### Post Actions:
-- `createPost(formData)` - Tạo post mới
-- `getPosts(published?)` - Lấy danh sách posts
-- `getPostById(id)` - Lấy post theo ID
-- `updatePost(id, formData)` - Cập nhật post
-- `deletePost(id)` - Xóa post
+#### Post Actions (Blog nghệ thuật):
+- `createPost(formData)` - Tạo bài viết nghệ thuật mới
+- `getPosts(published?)` - Lấy danh sách bài viết
+- `getPostById(id)` - Lấy bài viết theo ID
+- `updatePost(id, formData)` - Cập nhật bài viết
+- `deletePost(id)` - Xóa bài viết
 - `togglePostPublication(id)` - Toggle publish status
+
+#### Product Actions (Sản phẩm nghệ thuật):
+- `createProduct(formData)` - Tạo sản phẩm tranh mới
+- `getProducts(filters?)` - Lấy danh sách sản phẩm với bộ lọc
+- `getProductById(id)` - Lấy sản phẩm theo ID
+- `getProductBySlug(slug)` - Lấy sản phẩm theo slug
+- `updateProduct(id, formData)` - Cập nhật sản phẩm
+- `deleteProduct(id)` - Xóa sản phẩm
+- `toggleProductSale(id)` - Toggle trạng thái sale
+
+#### Order Actions (Quản lý đơn hàng):
+- `createOrder(formData)` - Tạo đơn hàng mới
+- `getOrders(filters?)` - Lấy danh sách đơn hàng
+- `getOrderById(id)` - Lấy đơn hàng theo ID
+- `updateOrderStatus(id, status)` - Cập nhật trạng thái đơn hàng
+- `deleteOrder(id)` - Xóa đơn hàng
 
 ### 3. API Routes
 
 API routes trong `pages/api/` sử dụng server actions:
 
 ```typescript
-// pages/api/users/index.ts
-import { createUser, getUsers } from '../../../utils/actions/user-actions';
+// pages/api/products/index.ts
+import { createProduct, getProducts } from '../../../utils/actions/product-actions';
 
 export default async function handler(req, res) {
   switch (req.method) {
     case 'GET':
-      const result = await getUsers();
+      const result = await getProducts(req.query);
       return res.json(result.data);
     case 'POST':
-      // Handle POST request
+      const product = await createProduct(req.body);
+      return res.json(product);
   }
 }
 ```
@@ -99,29 +124,45 @@ export default async function handler(req, res) {
 Sử dụng API routes từ frontend:
 
 ```typescript
-// Tạo user mới
-const response = await fetch('/api/users', {
+// Tạo sản phẩm tranh mới
+const response = await fetch('/api/products', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ email, name, avatar })
+  body: JSON.stringify({ 
+    name, description, originalPrice, salePrice, 
+    imageUrls, categories, colors, sizes 
+  })
 });
 
-// Lấy danh sách users
-const response = await fetch('/api/users');
-const users = await response.json();
+// Lấy danh sách sản phẩm với bộ lọc
+const response = await fetch('/api/products?category=abstract&color=blue');
+const products = await response.json();
+
+// Tạo đơn hàng mới
+const response = await fetch('/api/orders', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    customerName, customerPhone, customerEmail,
+    shippingAddress, items, total, paymentMethod
+  })
+});
 ```
 
 ## Features
 
 ### ✅ Đã implement:
 
-1. **Database Models**: User, Post, Category với relationships
-2. **Server Actions**: CRUD operations cho tất cả models
+1. **Database Models**: User, Post, Product, Order, Category, Size, Color với relationships
+2. **Server Actions**: CRUD operations cho tất cả models nghệ thuật
 3. **API Routes**: RESTful endpoints sử dụng server actions
 4. **Error Handling**: Proper error handling và user feedback
 5. **Type Safety**: TypeScript types cho tất cả operations
 6. **Form Handling**: React forms với Ant Design
-7. **Demo Page**: Complete demo với user management
+7. **Admin Dashboard**: Complete admin panel cho quản lý nghệ thuật
+8. **E-commerce Features**: Product catalog, shopping cart, order management
+9. **Image Management**: Upload và quản lý hình ảnh tranh nghệ thuật
+10. **Blog System**: Hệ thống blog về nghệ thuật và trang trí nội thất
 
 ### 🔄 Revalidation
 
@@ -130,21 +171,24 @@ Server actions sử dụng `revalidateTag()` để tự động refresh data sau
 ```typescript
 import { revalidateTag } from 'next/cache';
 
-export async function createUser(formData: FormData) {
-  // ... create user logic
-  revalidateTag('users'); // Revalidate users data
-  return { success: true, data: user };
+export async function createProduct(formData: FormData) {
+  // ... create product logic
+  revalidateTag('products'); // Revalidate products data
+  return { success: true, data: product };
 }
 ```
 
 ## Testing
 
-1. **Truy cập demo page**: `http://localhost:3000/demo/server-actions`
-2. **Test CRUD operations**: Create, Read, Update, Delete users
-3. **Test error handling**: Thử các invalid inputs
-4. **Test API endpoints**: Sử dụng Postman hoặc curl
-5. **Test Authentication**: `http://localhost:3000/demo/auth-demo`
-6. **Test Font Configuration**: `http://localhost:3000/demo/font-demo`
+1. **Truy cập admin dashboard**: `http://localhost:3000/dashboard`
+2. **Test Product Management**: `http://localhost:3000/products-admin`
+3. **Test Order Management**: `http://localhost:3000/order-admin`
+4. **Test Blog Management**: `http://localhost:3000/blog-admin`
+5. **Test User Management**: `http://localhost:3000/users`
+6. **Test Public Pages**: 
+   - Products: `http://localhost:3000/products`
+   - Blog: `http://localhost:3000/blog`
+   - Cart: `http://localhost:3000/cart-checkout`
 
 ## Authentication Features
 
@@ -188,7 +232,7 @@ export async function createUser(formData: FormData) {
 
 ```bash
 # Chạy development server
-yarn dev
+npm run dev
 
 # Generate Prisma client sau khi thay đổi schema
 npx prisma generate
@@ -205,43 +249,102 @@ npx prisma studio
 
 ## Database Schema
 
-Dự án bao gồm 3 models chính:
+Dự án bao gồm các models chính cho ứng dụng e-commerce nghệ thuật:
 
 ### User Model
 ```prisma
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String    @id @default(cuid())
+  email     String    @unique
   name      String?
   avatar    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  password  String    // Hashed password
+  role      String    @default("user") // Default role is 'user'
+  isActive  Boolean   @default(true)
+  lastLogin DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   posts     Post[]
+  orders    Order[]
 }
 ```
 
-### Post Model
+### Product Model (Sản phẩm nghệ thuật)
+```prisma
+model Product {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String
+  originalPrice Int
+  salePrice     Int
+  rating        Float    @default(0)
+  reviewCount   Int      @default(0)
+  isOnSale      Boolean  @default(false)
+  thumbnailUrl  String?
+  imageUrls     String[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  sizes      ProductSize[]
+  colors     ProductColor[]
+  categories ProductCategory[]
+  orderItems OrderItem[]
+}
+```
+
+### Order Model (Đơn hàng)
+```prisma
+model Order {
+  id          String @id @default(cuid())
+  orderNumber String @unique
+  status      String @default("pending") // pending, confirmed, shipped, delivered, cancelled
+
+  // Customer info
+  customerName  String
+  customerPhone String
+  customerEmail String?
+
+  // Shipping address
+  shippingAddress String
+
+  // Order summary
+  subtotal           Int
+  discount           Int
+  discountPercentage Int @default(0)
+  shippingFee        Int
+  total              Int
+
+  // Payment & shipping method
+  shippingMethod String // standard, express
+  paymentMethod  String // cod, online
+  paymentStatus  String @default("pending") // pending, paid, failed
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userId String?
+  user   User?       @relation(fields: [userId], references: [id])
+  items  OrderItem[]
+}
+```
+
+### Post Model (Blog nghệ thuật)
 ```prisma
 model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
-}
-```
-
-### Category Model
-```prisma
-model Category {
   id          String   @id @default(cuid())
-  name        String   @unique
+  title       String
   description String?
+  content     String?
+  image       String? // URL or path to uploaded image
+  published   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
 }
 ```
 
