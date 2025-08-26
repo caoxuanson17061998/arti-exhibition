@@ -1,9 +1,10 @@
 /* eslint-disable */
 import prisma from "../db";
+import slugify from "slugify";
 
 export interface ProductInput {
   name: string;
-  slug: string;
+  slug?: string;
   description: string;
   originalPrice: number;
   salePrice: number;
@@ -17,12 +18,30 @@ export interface ProductInput {
 // CREATE product
 export async function createProduct(data: ProductInput) {
   try {
+    // Auto generate slug if not provided
+    let slug = data.slug;
+    if (!slug || slug.trim() === "") {
+      slug = slugify(data.name, {
+        lower: true,
+        locale: "vi",
+        strict: true,
+        replacement: "-",
+      });
+    }
+
     const existing = await prisma.product.findUnique({
-      where: {slug: data.slug},
+      where: {slug: slug},
     });
 
     if (existing) {
-      return {success: false, error: "Slug already exists."};
+      // If slug exists, add a unique suffix
+      let counter = 1;
+      let uniqueSlug = `${slug}-${counter}`;
+      while (await prisma.product.findUnique({where: {slug: uniqueSlug}})) {
+        counter++;
+        uniqueSlug = `${slug}-${counter}`;
+      }
+      slug = uniqueSlug;
     }
 
     const [validColorIds, validSizeIds, validCategoryIds] = await Promise.all([
@@ -42,7 +61,7 @@ export async function createProduct(data: ProductInput) {
 
     const productData: any = {
       name: data.name,
-      slug: data.slug,
+      slug: slug,
       description: data.description,
       originalPrice: data.originalPrice,
       salePrice: data.salePrice,
@@ -99,16 +118,39 @@ export async function updateProduct(id: string, data: ProductInput) {
     const existing = await prisma.product.findUnique({where: {id}});
     if (!existing) return {success: false, error: "Product not found."};
 
+    // Auto generate slug if not provided or if name changed
+    let slug = data.slug;
+    if (!slug || slug.trim() === "" || data.name !== existing.name) {
+      slug = slugify(data.name, {
+        lower: true,
+        locale: "vi",
+        strict: true,
+        replacement: "-",
+      });
+    }
+
     const slugTaken = await prisma.product.findFirst({
-      where: {slug: data.slug, NOT: {id}},
+      where: {slug: slug, NOT: {id}},
     });
-    if (slugTaken) return {success: false, error: "Slug already exists."};
+
+    if (slugTaken) {
+      // If slug exists, add a unique suffix
+      let counter = 1;
+      let uniqueSlug = `${slug}-${counter}`;
+      while (
+        await prisma.product.findFirst({where: {slug: uniqueSlug, NOT: {id}}})
+      ) {
+        counter++;
+        uniqueSlug = `${slug}-${counter}`;
+      }
+      slug = uniqueSlug;
+    }
 
     const updated = await prisma.product.update({
       where: {id},
       data: {
         name: data.name,
-        slug: data.slug,
+        slug: slug,
         description: data.description,
         originalPrice: data.originalPrice,
         salePrice: data.salePrice,

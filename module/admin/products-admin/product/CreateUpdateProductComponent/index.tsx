@@ -16,8 +16,9 @@ import {
 } from "@mui/material";
 import axios, {AxiosError} from "axios";
 import React, {useEffect} from "react";
-import {useForm} from "react-hook-form";
+import {useForm, useWatch} from "react-hook-form";
 import {useMutation, useQuery, useQueryClient} from "react-query";
+import slugify from "slugify";
 
 interface CreateUpdateProductProps {
   changeTab?: (tab: string) => void;
@@ -45,6 +46,7 @@ export default function CreateUpdateProductComponent({
     formState: {errors},
     reset,
     setError,
+    setValue,
   } = useForm<ProductFormData>({
     resolver: yupResolver(productSchema),
     defaultValues: {
@@ -60,6 +62,25 @@ export default function CreateUpdateProductComponent({
       categoryIds: [],
     },
   });
+
+  // Watch name field to automatically generate slug
+  const watchedName = useWatch({
+    control,
+    name: "name",
+  });
+
+  // Auto generate slug from name
+  useEffect(() => {
+    if (watchedName && !productId) { // Only auto-generate for new products
+      const generatedSlug = slugify(watchedName, {
+        lower: true,
+        locale: "vi",
+        strict: true,
+        replacement: "-",
+      });
+      setValue("slug", generatedSlug);
+    }
+  }, [watchedName, productId, setValue]);
 
   const {data: productDetail} = useQuery(
     ["productDetail", productId],
@@ -92,11 +113,8 @@ export default function CreateUpdateProductComponent({
     const axiosError = error as AxiosError<ApiError>;
     const message = axiosError?.response?.data?.error || "Unknown error";
 
-    if (message.toLowerCase().includes("slug")) {
-      setError("slug", {type: "manual", message});
-    } else {
-      setError("name", {type: "manual", message});
-    }
+    // Since slug is auto-generated, we don't need to handle slug errors
+    setError("name", {type: "manual", message});
   };
 
   const createMutation = useMutation(
@@ -148,7 +166,6 @@ export default function CreateUpdateProductComponent({
   }, [productId, productDetail, reset]);
 
   const onSubmit = (data: ProductFormData) => {
-    console.log("Submit product data:", data);
     if (productId) {
       updateMutation.mutate(data);
     } else {
@@ -194,12 +211,6 @@ export default function CreateUpdateProductComponent({
               control={control}
               label="Tên sản phẩm"
               error={errors.name}
-            />
-            <ControlledTextField
-              name="slug"
-              control={control}
-              label="Đường dẫn (slug)"
-              error={errors.slug}
             />
             <ControlledTextField
               name="description"

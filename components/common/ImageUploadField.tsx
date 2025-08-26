@@ -78,9 +78,13 @@ export default function ImageUploadField({
 
             if (multiple) {
               const current = Array.isArray(field.value) ? field.value : [];
-              field.onChange([...current, ...base64List]);
+              // Filter out any empty or invalid values
+              const validBase64 = base64List.filter(b64 => b64 && b64.trim() !== '');
+              field.onChange([...current, ...validBase64]);
             } else {
-              field.onChange(base64List[0]);
+              // Ensure we have a valid base64 string
+              const base64 = base64List[0];
+              field.onChange(base64 && base64.trim() !== '' ? base64 : '');
             }
           } catch (err) {
             console.error("Error converting to base64:", err);
@@ -94,7 +98,7 @@ export default function ImageUploadField({
             updated.splice(index!, 1);
             field.onChange(updated);
           } else {
-            field.onChange(null);
+            field.onChange(''); // Set to empty string instead of null
           }
         };
 

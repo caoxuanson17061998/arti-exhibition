@@ -14,7 +14,7 @@ import {Button, Dropdown, Input, Spin, Typography} from "antd";
 import axios from "axios";
 import {useRouter} from "next/router";
 import qs from "qs";
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useEffect, useMemo, useState, useRef} from "react";
 import {FiFilter} from "react-icons/fi";
 import {useDispatch, useSelector} from "react-redux";
 
@@ -26,10 +26,53 @@ export function ProductContainer({onProductClick}: ProductProps) {
   const router = useRouter();
   const dispatch = useDispatch();
   const isCartOpen = useSelector((state: IRootState) => state.cart.isCartOpen);
+  
+  // Helper function to compare query objects
+  const areQueriesEqual = (query1: any, query2: any) => {
+    // Normalize the queries by removing empty values
+    const normalize = (obj: any) => {
+      const normalized: any = {};
+      Object.keys(obj).forEach(key => {
+        const value = obj[key];
+        if (value !== undefined && value !== null && value !== '' && 
+            !(Array.isArray(value) && value.length === 0)) {
+          normalized[key] = Array.isArray(value) ? value.sort() : value;
+        }
+      });
+      return normalized;
+    };
+    
+    const norm1 = normalize(query1);
+    const norm2 = normalize(query2);
+    
+    const keys1 = Object.keys(norm1).sort();
+    const keys2 = Object.keys(norm2).sort();
+    
+    if (keys1.length !== keys2.length) return false;
+    
+    for (let i = 0; i < keys1.length; i++) {
+      if (keys1[i] !== keys2[i]) return false;
+      
+      const val1 = norm1[keys1[i]];
+      const val2 = norm2[keys2[i]];
+      
+      if (Array.isArray(val1) && Array.isArray(val2)) {
+        if (val1.length !== val2.length) return false;
+        for (let j = 0; j < val1.length; j++) {
+          if (val1[j] !== val2[j]) return false;
+        }
+      } else if (val1 !== val2) {
+        return false;
+      }
+    }
+    
+    return true;
+  };
+  
   const [openFilter, setOpenFilter] = useState(false);
   const [selectedSort, setSelectedSort] = useState("Sắp xếp");
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 8;
+  const itemsPerPage = 8; // Products per page - adjustable
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedPrice, setSelectedPrice] = useState<[number, number]>([
@@ -45,6 +88,8 @@ export function ProductContainer({onProductClick}: ProductProps) {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | undefined>(
     undefined,
   );
+  const [isInitialized, setIsInitialized] = useState(false);
+  const updatingUrl = useRef(false);
 
   // State tạm thời cho Drawer (pending)
   const [pendingColors, setPendingColors] = useState<string[]>([]);
@@ -62,7 +107,7 @@ export function ProductContainer({onProductClick}: ProductProps) {
 
   // Initialize filters from URL query parameters
   useEffect(() => {
-    if (router.isReady) {
+    if (router.isReady && !isInitialized && !updatingUrl.current) {
       const {
         categoryId,
         colors,
@@ -73,36 +118,45 @@ export function ProductContainer({onProductClick}: ProductProps) {
         sortOrder: urlSortOrder,
       } = router.query;
 
+      let hasFilters = false;
+
       if (categoryId && typeof categoryId === "string") {
         setSelectedCategoryId(categoryId);
+        hasFilters = true;
       }
 
       if (colors) {
         const colorArray = Array.isArray(colors) ? colors : [colors];
         setSelectedColors(colorArray as string[]);
+        hasFilters = true;
       }
 
       if (sizes) {
         const sizeArray = Array.isArray(sizes) ? sizes : [sizes];
         setSelectedSizes(sizeArray as string[]);
+        hasFilters = true;
       }
 
       if (minPrice && maxPrice) {
         const min = parseInt(minPrice as string, 10) || 0;
         const max = parseInt(maxPrice as string, 10) || 1280000;
         setSelectedPrice([min, max]);
+        hasFilters = true;
       }
 
       if (urlSortBy && urlSortOrder) {
         setSortBy(urlSortBy as string);
         setSortOrder(urlSortOrder as "asc" | "desc");
+        hasFilters = true;
       }
+      
+      setIsInitialized(true);
     }
-  }, [router.isReady, router.query]);
+  }, [router.isReady, router.query, isInitialized]);
 
   // Update URL when filters change
   useEffect(() => {
-    if (!router.isReady) return;
+    if (!router.isReady || !isInitialized) return;
 
     const query: any = {};
 
@@ -117,7 +171,13 @@ export function ProductContainer({onProductClick}: ProductProps) {
     if (sortBy) query.sortBy = sortBy;
     if (sortOrder) query.sortOrder = sortOrder;
 
-    router.push({pathname: router.pathname, query}, undefined, {shallow: true});
+    // Only update URL if the query has actually changed
+    if (!areQueriesEqual(router.query, query)) {
+      updatingUrl.current = true;
+      router.push({pathname: router.pathname, query}, undefined, {shallow: true}).finally(() => {
+        updatingUrl.current = false;
+      });
+    }
   }, [
     selectedCategoryId,
     selectedColors,
@@ -125,16 +185,21 @@ export function ProductContainer({onProductClick}: ProductProps) {
     selectedPrice,
     sortBy,
     sortOrder,
+    router.isReady,
+    isInitialized,
   ]);
 
   // Fetch products when filter changes
   useEffect(() => {
+    if (!isInitialized) return;
+    
     setIsLoadingProducts(true);
     setProductsError(null);
+    setCurrentPage(1); // Reset to first page when filters change
     const params: any = {};
     if (selectedColors.length > 0) params.colorId = selectedColors;
     if (selectedSizes.length > 0) params.size = selectedSizes;
-    if (selectedPrice) {
+    if (selectedPrice && (selectedPrice[0] > 0 || selectedPrice[1] < 1280000)) {
       const [minPrice, maxPrice] = selectedPrice;
       params.minPrice = minPrice;
       params.maxPrice = maxPrice;
@@ -158,6 +223,7 @@ export function ProductContainer({onProductClick}: ProductProps) {
     selectedCategoryId,
     sortBy,
     sortOrder,
+    isInitialized,
   ]);
 
   // Khi mở Drawer, đồng bộ state pending với state thực tế
@@ -255,9 +321,19 @@ export function ProductContainer({onProductClick}: ProductProps) {
     [categories, selectedCategoryId],
   );
 
+  // Calculate total pages based on items per page
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+  
+  // Ensure current page doesn't exceed total pages
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+  
   const paginatedProducts = products.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
   );
 
   // Combined loading and error states
@@ -428,6 +504,9 @@ export function ProductContainer({onProductClick}: ProductProps) {
                   selectedPrice[1] < 1280000) && (
                   <Button
                     onClick={() => {
+                      // Set flag to prevent URL parsing
+                      updatingUrl.current = true;
+                      
                       setSelectedCategoryId(undefined);
                       setSelectedColors([]);
                       setSelectedSizes([]);
@@ -435,9 +514,18 @@ export function ProductContainer({onProductClick}: ProductProps) {
                       setSortBy(undefined);
                       setSortOrder(undefined);
                       setSelectedSort("Sắp xếp");
+                      setCurrentPage(1); // Reset to first page
+                      
+                      // Also reset pending states
+                      setPendingColors([]);
+                      setPendingSizes([]);
+                      setPendingPrice([0, 1280000]);
+                      
                       // Clear URL query parameters
                       router.push({pathname: router.pathname}, undefined, {
                         shallow: true,
+                      }).finally(() => {
+                        updatingUrl.current = false;
                       });
                     }}
                     className="h-8 px-3 rounded-[8px] bg-transparent border border-[#0EC1AF] text-[#0EC1AF] text-sm hover:!bg-[#0EC1AF] hover:!text-white hover:!border-[#0EC1AF]"
@@ -567,67 +655,98 @@ export function ProductContainer({onProductClick}: ProductProps) {
                 )}
               </div>
 
-              {/* Pagination */}
-              <div className="flex justify-center">
-                <div className="flex items-center gap-1.5">
-                  <Button
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                    className="w-8 h-8 rounded-full border-none bg-transparent p-2 flex items-center justify-center hover:!bg-[#f5f5f5] disabled:opacity-50"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                      <path
-                        d="M7.5 4.17L4.17 7.5L11.67 15"
-                        stroke={currentPage === 1 ? "#637381" : "#212B36"}
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </Button>
-
-                  {[1, 2, 3, 4, 5].map((page) => (
+              {/* Pagination - Only show if there are products */}
+              {products.length > 0 && (
+                <div className="flex justify-center">
+                  <div className="flex items-center gap-1.5">
                     <Button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`w-8 h-8 rounded-full border-none flex items-center justify-center p-0 text-base font-semibold leading-[1.5] ${
-                        currentPage === page
-                          ? "bg-[#212B36] text-white"
-                          : "bg-transparent text-[#212B36] hover:!bg-[#f5f5f5]"
-                      }`}
-                      disabled={page > Math.ceil(products.length / pageSize)}
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      className="w-8 h-8 rounded-full border-none bg-transparent p-2 flex items-center justify-center hover:!bg-[#f5f5f5] disabled:opacity-50"
                     >
-                      {page}
+                      <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                        <path
+                          d="M7.5 4.17L4.17 7.5L11.67 15"
+                          stroke={currentPage === 1 ? "#637381" : "#212B36"}
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
                     </Button>
-                  ))}
 
-                  <span className="w-8 h-8 flex items-center justify-center text-base font-semibold text-[#212B36]">
-                    …
-                  </span>
+                    {/* Dynamic pagination based on total pages */}
+                    {(() => {
+                      const maxVisiblePages = 5;
+                      const startPage = Math.max(1, Math.min(currentPage - 2, totalPages - maxVisiblePages + 1));
+                      const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                      const pages = [];
 
-                  <Button
-                    disabled={
-                      currentPage >= Math.ceil(products.length / pageSize)
-                    }
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    className="w-8 h-8 rounded-full border-none bg-transparent p-2 flex items-center justify-center hover:!bg-[#f5f5f5] disabled:opacity-50"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                      <path
-                        d="M12.5 15.83L15.83 12.5L8.33 5"
-                        stroke={
-                          currentPage >= Math.ceil(products.length / pageSize)
-                            ? "#637381"
-                            : "#212B36"
+                      for (let page = startPage; page <= endPage; page++) {
+                        pages.push(
+                          <Button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`w-8 h-8 rounded-full border-none flex items-center justify-center p-0 text-base font-semibold leading-[1.5] ${
+                              currentPage === page
+                                ? "bg-[#212B36] text-white"
+                                : "bg-transparent text-[#212B36] hover:!bg-[#f5f5f5]"
+                            }`}
+                          >
+                            {page}
+                          </Button>
+                        );
+                      }
+
+                      // Add ellipsis and last page if needed
+                      if (endPage < totalPages) {
+                        if (endPage < totalPages - 1) {
+                          pages.push(
+                            <span key="ellipsis" className="w-8 h-8 flex items-center justify-center text-base font-semibold text-[#212B36]">
+                              …
+                            </span>
+                          );
                         }
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </Button>
+                        pages.push(
+                          <Button
+                            key={totalPages}
+                            onClick={() => setCurrentPage(totalPages)}
+                            className={`w-8 h-8 rounded-full border-none flex items-center justify-center p-0 text-base font-semibold leading-[1.5] ${
+                              currentPage === totalPages
+                                ? "bg-[#212B36] text-white"
+                                : "bg-transparent text-[#212B36] hover:!bg-[#f5f5f5]"
+                            }`}
+                          >
+                            {totalPages}
+                          </Button>
+                        );
+                      }
+
+                      return pages;
+                    })()}
+
+                    <Button
+                      disabled={currentPage >= totalPages}
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      className="w-8 h-8 rounded-full border-none bg-transparent p-2 flex items-center justify-center hover:!bg-[#f5f5f5] disabled:opacity-50"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                        <path
+                          d="M12.5 15.83L15.83 12.5L8.33 5"
+                          stroke={
+                            currentPage >= totalPages
+                              ? "#637381"
+                              : "#212B36"
+                          }
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
