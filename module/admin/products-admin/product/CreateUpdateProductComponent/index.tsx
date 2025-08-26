@@ -71,7 +71,8 @@ export default function CreateUpdateProductComponent({
 
   // Auto generate slug from name
   useEffect(() => {
-    if (watchedName && !productId) { // Only auto-generate for new products
+    if (watchedName && !productId) {
+      // Only auto-generate for new products
       const generatedSlug = slugify(watchedName, {
         lower: true,
         locale: "vi",

@@ -14,7 +14,7 @@ import {Button, Dropdown, Input, Spin, Typography} from "antd";
 import axios from "axios";
 import {useRouter} from "next/router";
 import qs from "qs";
-import React, {useEffect, useMemo, useState, useRef} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 import {FiFilter} from "react-icons/fi";
 import {useDispatch, useSelector} from "react-redux";
 
@@ -26,36 +26,40 @@ export function ProductContainer({onProductClick}: ProductProps) {
   const router = useRouter();
   const dispatch = useDispatch();
   const isCartOpen = useSelector((state: IRootState) => state.cart.isCartOpen);
-  
+
   // Helper function to compare query objects
   const areQueriesEqual = (query1: any, query2: any) => {
     // Normalize the queries by removing empty values
     const normalize = (obj: any) => {
       const normalized: any = {};
-      Object.keys(obj).forEach(key => {
+      Object.keys(obj).forEach((key) => {
         const value = obj[key];
-        if (value !== undefined && value !== null && value !== '' && 
-            !(Array.isArray(value) && value.length === 0)) {
+        if (
+          value !== undefined &&
+          value !== null &&
+          value !== "" &&
+          !(Array.isArray(value) && value.length === 0)
+        ) {
           normalized[key] = Array.isArray(value) ? value.sort() : value;
         }
       });
       return normalized;
     };
-    
+
     const norm1 = normalize(query1);
     const norm2 = normalize(query2);
-    
+
     const keys1 = Object.keys(norm1).sort();
     const keys2 = Object.keys(norm2).sort();
-    
+
     if (keys1.length !== keys2.length) return false;
-    
+
     for (let i = 0; i < keys1.length; i++) {
       if (keys1[i] !== keys2[i]) return false;
-      
+
       const val1 = norm1[keys1[i]];
       const val2 = norm2[keys2[i]];
-      
+
       if (Array.isArray(val1) && Array.isArray(val2)) {
         if (val1.length !== val2.length) return false;
         for (let j = 0; j < val1.length; j++) {
@@ -65,10 +69,10 @@ export function ProductContainer({onProductClick}: ProductProps) {
         return false;
       }
     }
-    
+
     return true;
   };
-  
+
   const [openFilter, setOpenFilter] = useState(false);
   const [selectedSort, setSelectedSort] = useState("Sắp xếp");
   const [currentPage, setCurrentPage] = useState(1);
@@ -149,7 +153,7 @@ export function ProductContainer({onProductClick}: ProductProps) {
         setSortOrder(urlSortOrder as "asc" | "desc");
         hasFilters = true;
       }
-      
+
       setIsInitialized(true);
     }
   }, [router.isReady, router.query, isInitialized]);
@@ -174,9 +178,11 @@ export function ProductContainer({onProductClick}: ProductProps) {
     // Only update URL if the query has actually changed
     if (!areQueriesEqual(router.query, query)) {
       updatingUrl.current = true;
-      router.push({pathname: router.pathname, query}, undefined, {shallow: true}).finally(() => {
-        updatingUrl.current = false;
-      });
+      router
+        .push({pathname: router.pathname, query}, undefined, {shallow: true})
+        .finally(() => {
+          updatingUrl.current = false;
+        });
     }
   }, [
     selectedCategoryId,
@@ -192,7 +198,7 @@ export function ProductContainer({onProductClick}: ProductProps) {
   // Fetch products when filter changes
   useEffect(() => {
     if (!isInitialized) return;
-    
+
     setIsLoadingProducts(true);
     setProductsError(null);
     setCurrentPage(1); // Reset to first page when filters change
@@ -323,14 +329,14 @@ export function ProductContainer({onProductClick}: ProductProps) {
 
   // Calculate total pages based on items per page
   const totalPages = Math.ceil(products.length / itemsPerPage);
-  
+
   // Ensure current page doesn't exceed total pages
   useEffect(() => {
     if (currentPage > totalPages && totalPages > 0) {
       setCurrentPage(totalPages);
     }
   }, [currentPage, totalPages]);
-  
+
   const paginatedProducts = products.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
@@ -506,7 +512,7 @@ export function ProductContainer({onProductClick}: ProductProps) {
                     onClick={() => {
                       // Set flag to prevent URL parsing
                       updatingUrl.current = true;
-                      
+
                       setSelectedCategoryId(undefined);
                       setSelectedColors([]);
                       setSelectedSizes([]);
@@ -515,18 +521,20 @@ export function ProductContainer({onProductClick}: ProductProps) {
                       setSortOrder(undefined);
                       setSelectedSort("Sắp xếp");
                       setCurrentPage(1); // Reset to first page
-                      
+
                       // Also reset pending states
                       setPendingColors([]);
                       setPendingSizes([]);
                       setPendingPrice([0, 1280000]);
-                      
+
                       // Clear URL query parameters
-                      router.push({pathname: router.pathname}, undefined, {
-                        shallow: true,
-                      }).finally(() => {
-                        updatingUrl.current = false;
-                      });
+                      router
+                        .push({pathname: router.pathname}, undefined, {
+                          shallow: true,
+                        })
+                        .finally(() => {
+                          updatingUrl.current = false;
+                        });
                     }}
                     className="h-8 px-3 rounded-[8px] bg-transparent border border-[#0EC1AF] text-[#0EC1AF] text-sm hover:!bg-[#0EC1AF] hover:!text-white hover:!border-[#0EC1AF]"
                   >
@@ -664,7 +672,12 @@ export function ProductContainer({onProductClick}: ProductProps) {
                       onClick={() => setCurrentPage(currentPage - 1)}
                       className="w-8 h-8 rounded-full border-none bg-transparent p-2 flex items-center justify-center hover:!bg-[#f5f5f5] disabled:opacity-50"
                     >
-                      <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                      >
                         <path
                           d="M7.5 4.17L4.17 7.5L11.67 15"
                           stroke={currentPage === 1 ? "#637381" : "#212B36"}
@@ -678,8 +691,17 @@ export function ProductContainer({onProductClick}: ProductProps) {
                     {/* Dynamic pagination based on total pages */}
                     {(() => {
                       const maxVisiblePages = 5;
-                      const startPage = Math.max(1, Math.min(currentPage - 2, totalPages - maxVisiblePages + 1));
-                      const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                      const startPage = Math.max(
+                        1,
+                        Math.min(
+                          currentPage - 2,
+                          totalPages - maxVisiblePages + 1,
+                        ),
+                      );
+                      const endPage = Math.min(
+                        totalPages,
+                        startPage + maxVisiblePages - 1,
+                      );
                       const pages = [];
 
                       for (let page = startPage; page <= endPage; page++) {
@@ -694,7 +716,7 @@ export function ProductContainer({onProductClick}: ProductProps) {
                             }`}
                           >
                             {page}
-                          </Button>
+                          </Button>,
                         );
                       }
 
@@ -702,9 +724,12 @@ export function ProductContainer({onProductClick}: ProductProps) {
                       if (endPage < totalPages) {
                         if (endPage < totalPages - 1) {
                           pages.push(
-                            <span key="ellipsis" className="w-8 h-8 flex items-center justify-center text-base font-semibold text-[#212B36]">
+                            <span
+                              key="ellipsis"
+                              className="w-8 h-8 flex items-center justify-center text-base font-semibold text-[#212B36]"
+                            >
                               …
-                            </span>
+                            </span>,
                           );
                         }
                         pages.push(
@@ -718,7 +743,7 @@ export function ProductContainer({onProductClick}: ProductProps) {
                             }`}
                           >
                             {totalPages}
-                          </Button>
+                          </Button>,
                         );
                       }
 
@@ -730,13 +755,16 @@ export function ProductContainer({onProductClick}: ProductProps) {
                       onClick={() => setCurrentPage(currentPage + 1)}
                       className="w-8 h-8 rounded-full border-none bg-transparent p-2 flex items-center justify-center hover:!bg-[#f5f5f5] disabled:opacity-50"
                     >
-                      <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                      >
                         <path
                           d="M12.5 15.83L15.83 12.5L8.33 5"
                           stroke={
-                            currentPage >= totalPages
-                              ? "#637381"
-                              : "#212B36"
+                            currentPage >= totalPages ? "#637381" : "#212B36"
                           }
                           strokeWidth="1.5"
                           strokeLinecap="round"

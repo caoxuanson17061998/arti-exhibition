@@ -20,11 +20,12 @@ export const productSchema = yup.object({
   thumbnailUrl: yup
     .string()
     .nullable()
-    .transform((value) => value === null ? "" : value) // Convert null to empty string
+    .transform((value) => (value === null ? "" : value)) // Convert null to empty string
     .test("is-valid-url", "Ảnh đại diện không hợp lệ", (value) => {
       if (!value || value === "" || value === null) return true; // Allow empty/null values
       // More flexible URL validation that accepts various formats
-      const urlPattern = /^(https?:\/\/.+|blob:.+|data:image\/.+;base64,.+|\/.*\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$)/i;
+      const urlPattern =
+        /^(https?:\/\/.+|blob:.+|data:image\/.+;base64,.+|\/.*\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$)/i;
       const result = urlPattern.test(value);
       return result;
     })
@@ -33,16 +34,17 @@ export const productSchema = yup.object({
   imageUrls: yup
     .array()
     .nullable()
-    .transform((value) => value === null ? [] : value) // Convert null to empty array
+    .transform((value) => (value === null ? [] : value)) // Convert null to empty array
     .of(
       yup
         .string()
         .nullable()
-        .transform((value) => value === null ? "" : value) // Convert null to empty string
+        .transform((value) => (value === null ? "" : value)) // Convert null to empty string
         .test("is-valid-url", "Ảnh trong danh sách không hợp lệ", (value) => {
           if (!value || value === "" || value === null) return true; // Allow empty/null values
           // More flexible URL validation that accepts various formats
-          const urlPattern = /^(https?:\/\/.+|blob:.+|data:image\/.+;base64,.+|\/.*\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$)/i;
+          const urlPattern =
+            /^(https?:\/\/.+|blob:.+|data:image\/.+;base64,.+|\/.*\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$)/i;
           const result = urlPattern.test(value);
           return result;
         }),
